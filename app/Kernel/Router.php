@@ -3,25 +3,31 @@
 namespace App\Kernel;
 use App\Kernel\Classes\Facades\File;
 use App\Kernel\Classes\Facades\Config;
+//use App\Project\backend\controllers\TestController;
+
+use App\Project\backend\controllers;
 
 class Router{
+    //public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
+    public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
+
     public static $routes = [
-        "ru/game" => "TestController->game",
-        "en/money" => "TestController->money",
+        "ru/test/game" => "TestController->game",
+        "en/test/money" => "TestController->money",
+        "ru/post/1" => "PostController->show",
+        "ru/post/update/1" => "PostController->update",
     ];
 
     public static function sendRequest($url){
         if(array_key_exists($url, self::$routes)){
             list($controller, $method) = explode("->", self::$routes[$url]);
-            //echo $controller;
+            $controller = self::$controllerBaseNamespace.$controller;
 
-            //$object = new TestController();//$controller();
-            //$object = new $controller;
-            //$object->$method();
-            echo 2;
+            $controller = new $controller();
+            $controller->$method();
         }
-        //echo 3;
 
+        return;
         File::save("test");
         echo "<br>";
         echo Config::get("lang");
@@ -29,3 +35,4 @@ class Router{
         echo Config::get("messages.not-found.ru");
     }
 }
+//call_user_func([self::$controllerBaseNamespace.$controller, $method]);

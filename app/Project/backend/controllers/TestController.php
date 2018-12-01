@@ -1,7 +1,12 @@
 <?php
-namespace App\Classes\Controllers;
+namespace App\Project\backend\controllers;
 
 class TestController{
+    public function __construct()
+    {
+        echo "TEST CONTROLLER STARTED<br>";
+    }
+
     public function game(){
         echo "Welcome to game";
     }
