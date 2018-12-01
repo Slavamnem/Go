@@ -1,5 +1,11 @@
 <?php
 
 return [
-    'lang' => 'ru'
+    'lang' => 'ru',
+    'messages' => [
+        'not-found' => [
+            'en' => 'Not found!',
+            'ru' => 'Не найдено!',
+        ],
+    ]
 ];

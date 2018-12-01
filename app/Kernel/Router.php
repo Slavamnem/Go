@@ -25,5 +25,7 @@ class Router{
         File::save("test");
         echo "<br>";
         echo Config::get("lang");
+        echo "<br>";
+        echo Config::get("messages.not-found.ru");
     }
 }
