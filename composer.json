@@ -1,0 +1,19 @@
+{
+    "name": "slava/demo",
+    "description": "Demo for Slava Autoload in Composer",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "slavamnem",
+            "email": "vzelinskiy@stud.onu.edu.ua"
+        }
+    ],
+    "require": {},
+	"autoload": {
+		"psr-4": {
+			"App\\": "app"
+		}
+    }
+		
+}
