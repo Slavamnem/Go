@@ -7,5 +7,6 @@ return [
             'en' => 'Not found!',
             'ru' => 'Не найдено!',
         ],
-    ]
+    ],
+    'url-levels' => 10,
 ];

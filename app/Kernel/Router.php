@@ -3,30 +3,43 @@
 namespace App\Kernel;
 use App\Kernel\Classes\Facades\File;
 use App\Kernel\Classes\Facades\Config;
-//use App\Project\backend\controllers\TestController;
+use App\Kernel\Classes\UrlToRoute;
 
 use App\Project\backend\controllers;
 
 class Router{
-    //public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
-    public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
-
     public static $routes = [
+        "" => "HomeController->index",
         "ru/test/game" => "TestController->game",
         "en/test/money" => "TestController->money",
-        "ru/post/1" => "PostController->show",
-        "ru/post/update/1" => "PostController->update",
+        "ru/post/{id:d}" => "PostController->show",
+        "ru/post/update/{id:d}" => "PostController->update",
+        "ru/post/{cat:s}/{id:d}" => "PostController->show2",
     ];
 
-    public static function sendRequest($url){
-        if(array_key_exists($url, self::$routes)){
-            list($controller, $method) = explode("->", self::$routes[$url]);
-            $controller = self::$controllerBaseNamespace.$controller;
+    public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
 
-            $controller = new $controller();
-            $controller->$method();
+    public static function buildUrl(){
+        $params = [];
+        for($i = 1; $i <= Config::get("url-levels"); $i++){
+            if($_REQUEST["par".$i]) $params[] = $_GET["par".$i];
         }
+        return (count($params))? implode("/", $params) : "";
+    }
 
+    public static function sendRequest(){
+        $url = self::buildUrl(); //echo $url."<br>";
+
+        $urlToRouter = new UrlToRoute();
+
+        list($controller, $method, $arguments) = $urlToRouter->getRouteFromUrl($url, self::$routes);
+
+        $controller = self::$controllerBaseNamespace.$controller;
+
+        call_user_func_array([$controller, $method], $arguments);
+
+        ////////////////////////////////////////////////////////
+        echo "<br>_____________________________________<br>";
         return;
         File::save("test");
         echo "<br>";
