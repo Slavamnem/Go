@@ -10,9 +10,12 @@ class PostController{
         echo "Category: $cat, Post № $id <br>";
     }
     public function update($id = 1){
-        echo "Update post №".$id;
+        echo "Update post № ".$id;
 
         //echo "<br>".substr("test string", 0, -1);
         //echo "<br>".substr("test string", -1);
+    }
+    public function get($message = null){
+        echo "yes it is get, message: $message";
     }
 }

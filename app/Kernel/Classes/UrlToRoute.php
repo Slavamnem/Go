@@ -16,10 +16,14 @@ class UrlToRoute{
     public $arguments = [];
 
     public function getRouteFromUrl($url, $routes){
+        $routes = $this->addRoutesUnusualParamsAccess($routes);
+//        echo "<pre>";
+////        print_r($routes);
+////        echo "</pre>";
         foreach($routes as $route => $executer){
             if($this->isMatch($url, $route)){
                 $result = explode("->", $executer);
-                $result[] = $this->arguments;
+                array_push($result, $this->arguments);
                 return $result;
             }
         }
@@ -27,6 +31,7 @@ class UrlToRoute{
     }
 
     public function isMatch($url, $route){
+        $this->arguments = [];
         $urlToArr = explode("/", $url);
         $routeToArr = explode("/", $route);
         if(count($urlToArr) == count($routeToArr)){
@@ -66,5 +71,32 @@ class UrlToRoute{
         else{
             return false;
         }
+    }
+
+    public function addRoutesUnusualParamsAccess($routes){
+        $resultRoutes = $routes;
+        $routePosition = 1;
+        foreach($routes as $route => $executer){
+            $routeItems = explode("/", $route);
+            $itemLevel = 0;
+            $newRoutes = [str_replace("?", "", $route) => $executer];
+            foreach ($routeItems as $item){
+                if(strpos($item, "?") !== false){
+                    //print_r(array_slice($routes, 0, 3)); //print_r(array_slice($routeItems, 0, 3));
+                    //echo implode("/", array_slice($routeItems, 0, $itemLevel)); echo "<br>";
+                    $newRoutes[str_replace("?", "", implode("/", array_slice($routeItems, 0, $itemLevel)))] = $executer;
+                }
+                $itemLevel++;
+            }
+
+            if(count($newRoutes) > 1){
+                $beforeRoutes = array_slice($resultRoutes, 0, $routePosition - 1);
+                $afterRoutes = array_slice($resultRoutes, $routePosition);
+                $resultRoutes = array_merge($beforeRoutes, $newRoutes, $afterRoutes);
+            }
+
+            $routePosition += count($newRoutes);
+        }
+        return $resultRoutes;
     }
 }
