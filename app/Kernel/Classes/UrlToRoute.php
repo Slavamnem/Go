@@ -2,6 +2,7 @@
 namespace App\Kernel\Classes;
 
 class UrlToRoute{
+    public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
 
     public $denied = [
         "'",
@@ -17,14 +18,23 @@ class UrlToRoute{
 
     public function getRouteFromUrl($url, $routes){
         $routes = $this->addRoutesUnusualParamsAccess($routes);
-//        echo "<pre>";
-////        print_r($routes);
-////        echo "</pre>";
         foreach($routes as $route => $executer){
             if($this->isMatch($url, $route)){
                 $result = explode("->", $executer);
                 array_push($result, $this->arguments);
                 return $result;
+            }
+        }
+        return $this->tryToFindController($url);
+    }
+    public function tryToFindController($url){
+        $urlToArr = explode("/", $url);
+        $controllers = opendir('app/Project/backend/controllers');
+        while (false !== ($file = readdir($controllers))) {
+            if(in_array(substr($file, 0, strpos($file, "Controller")), [$urlToArr[0], ucfirst($urlToArr[0])])){
+                if(call_user_func([explode(".", self::$controllerBaseNamespace.$file)[0], "check"], $urlToArr[1])){
+                    return [explode(".", $file)[0], $urlToArr[1], array_slice($urlToArr, 2)];
+                }
             }
         }
         return ["HomeController", "index", []];

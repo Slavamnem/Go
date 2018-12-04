@@ -30,6 +30,11 @@ class Router{
 
         call_user_func_array([$controller, $method], $arguments);
 
+//        $handle = opendir('app/Project/backend/controllers');
+//        while (false !== ($file = readdir($handle))) {
+//            echo "$file<br>";
+//        }
+
         ////////////////////////////////////////////////////////
         echo "<br>_____________________________________<br>";
         return;
