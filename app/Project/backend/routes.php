@@ -9,4 +9,6 @@ return [
     //"ru/post/{update?}/{id:d?}" => "PostController->update",
     "ru/post/update/{id:d?}" => "PostController->update",
     "ru/post/{cat:s}/{id:d}" => "PostController->show2",
+    //"article/index" => "TestController->game",
+    //"/admin/money/data/index/" => ""
 ];

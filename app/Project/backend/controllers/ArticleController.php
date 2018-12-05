@@ -2,7 +2,7 @@
 namespace App\Project\backend\controllers;
 
 class ArticleController{
-    public function index($message = ""){
+    public function index($message = "default"){
         echo "Article Controller welcome!!!<br>";
         echo $message;
     }

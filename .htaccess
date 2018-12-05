@@ -2,8 +2,8 @@ RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
-RewriteRule ^([^/]*)$ /index.php?par1=$1 [L,QSA]
-RewriteRule ^([^/]*)/([^/]*)$ /index.php?par1=$1&par2=$2 [L,QSA]
-RewriteRule ^([^/]*)/([^/]*)/([^/]*)$ /index.php?par1=$1&par2=$2&par3=$3 [L,QSA]
-RewriteRule ^([^/]*)/([^/]*)/([^/]*)/([^/]*)$ /index.php?par1=$1&par2=$2&par3=$3&par4=$4 [L,QSA]
-RewriteRule ^([^/]*)/([^/]*)/([^/]*)/([^/]*)/([^/]*)$ /index.php?par1=$1&par2=$2&par3=$3&par4=$4&par5=$5 [L,QSA]
+RewriteRule ^([^/]*)$ /index.php?parameter1=$1 [L,QSA]
+RewriteRule ^([^/]*)/([^/]*)$ /index.php?parameter1=$1&parameter2=$2 [L,QSA]
+RewriteRule ^([^/]*)/([^/]*)/([^/]*)$ /index.php?parameter1=$1&parameter2=$2&parameter3=$3 [L,QSA]
+RewriteRule ^([^/]*)/([^/]*)/([^/]*)/([^/]*)$ /index.php?parameter1=$1&parameter2=$2&parameter3=$3&parameter4=$4 [L,QSA]
+RewriteRule ^([^/]*)/([^/]*)/([^/]*)/([^/]*)/([^/]*)$ /index.php?parameter1=$1&parameter2=$2&parameter3=$3&parameter4=$4&parameter5=$5 [L,QSA]

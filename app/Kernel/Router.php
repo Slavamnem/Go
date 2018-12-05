@@ -6,34 +6,42 @@ use App\Kernel\Classes\Facades\Config;
 use App\Kernel\Classes\UrlToRoute;
 
 use App\Project\backend\controllers;
+use PHPUnit\Runner\Exception;
+
 
 class Router{
     public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
+    public static $routesFile = "./app/Project/backend/routes.php";
 
-    public static function buildUrl(){
-        $params = [];
-        for($i = 1; $i <= Config::get("url-levels"); $i++){
-            if($_REQUEST["par".$i]) $params[] = $_REQUEST["par".$i];
+    public static function urlGenerator(){
+        foreach ($_REQUEST as $key => $item){
+            if(preg_match("/parameter[0-9]+/", $key)){
+                yield $item;
+            }
         }
-        return (count($params))? implode("/", $params) : "";
+    }
+    public static function buildUrl(){
+        foreach (self::urlGenerator() as $item) {
+            $params[] = $item;
+        }
+        return @implode("/", $params);
     }
 
-    public static function sendRequest(){ // сделать необязательные параметры роутам
+    public static function sendRequest(){
         $url = self::buildUrl();
-        $routes = require "./app/Project/backend/routes.php";
+        $routes = require self::$routesFile;
 
         $urlToRouter = new UrlToRoute();
-
         list($controller, $method, $arguments) = $urlToRouter->getRouteFromUrl($url, $routes);
-        //print_r($arguments);
         $controller = self::$controllerBaseNamespace.$controller;
 
-        call_user_func_array([$controller, $method], $arguments);
+        try{
+            call_user_func_array([$controller, $method], $arguments);
+        } catch(\Throwable $e){
+            call_user_func_array([self::$controllerBaseNamespace."HomeController", "index"], []);
+            //echo "<br><br><h4 align='center'>Поймал ошибку!<br><br>".$e->getMessage()."</h4>";
+        }
 
-//        $handle = opendir('app/Project/backend/controllers');
-//        while (false !== ($file = readdir($handle))) {
-//            echo "$file<br>";
-//        }
 
         ////////////////////////////////////////////////////////
         echo "<br>_____________________________________<br>";
