@@ -2,6 +2,9 @@
 namespace App\Project\backend\controllers;
 
 class PostController{
+    public function index(){
+        echo "index";
+    }
     public function show($id = 1){
         echo "Post №".$id."<br>";
     }

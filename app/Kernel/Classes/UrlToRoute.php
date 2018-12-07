@@ -17,47 +17,44 @@ class UrlToRoute{
     public $arguments = [];
 
     public function getRouteFromUrl($url, $routes){
-        if(!$url) return ["HomeController", "index", []];
-        $routes = $this->addRoutesUnusualParamsAccess($routes);
-        foreach($routes as $route => $executer){
-            if($this->isMatch($url, $route)){
-                $result = explode("->", $executer);
-                array_push($result, $this->arguments);
-                return $result;
+        if($url){
+            $this->addExtraRoutesForUnusualParams($routes);
+            foreach($routes as $route => $executer){
+                if($this->isMatch($url, $route)){
+                    return array_merge(explode("->", $executer), [$this->arguments]);
+                }
             }
+            return $this->tryToFindController($url);
         }
-        return $this->tryToFindController($url);
+        else{
+            return ["HomeController", "index", []];
+        }
     }
+
     public function tryToFindController($url){
-        $result = $this->findControllerInDir('app/Project/backend/controllers', $url, 0);
+        $result = $this->findControllerInDir(self::$controllerBaseNamespace, $url, 0);
         return $result? $result : ["HomeController", "index", []];
     }
 
     public function findControllerInDir($dir, $url, $level, $path = []){
-        //echo "|";
         $urlToArr = explode("/", $url);
         $controllers = opendir($dir);
         while (false !== ($file = readdir($controllers))) {
-            //echo "|";
+
             if(count($urlToArr) < $level + 1){ return false; }
-            if(is_dir($dir."/".$file) and !in_array($file, [".", ".."]) and $file == $urlToArr[$level]){
-                //echo "1";
+            elseif(is_dir($dir."/".$file) and !in_array($file, [".", ".."]) and $file == $urlToArr[$level]){
                 $new_path = array_merge($path, [$file]);
                 $result = $this->findControllerInDir($dir."/".$file, $url, $level+1, $new_path);
                 if($result) return $result;
             }
-            //echo $file."<br>";
-            if(in_array(substr($file, 0, strpos($file, "Controller")), [$urlToArr[$level], ucfirst($urlToArr[$level])])){
-                //echo "__";
+            elseif(in_array(substr($file, 0, strpos($file, "Controller")), [$urlToArr[$level], ucfirst($urlToArr[$level])])){
                 $extra_path = ($level > 0)? implode('\\', $path)."\\" : "";
-
-
                 $method = (count($urlToArr) <= $level + 1)? "index" : $urlToArr[$level + 1];
-                //echo $method.count($urlToArr);
                 if(call_user_func([explode(".", self::$controllerBaseNamespace.$extra_path.$file)[0], "check"], $method)){
                     return [$extra_path.explode(".", $file)[0], $method, array_slice($urlToArr, $level + 2)];
                 }
             }
+
         }
         return false;
     }
@@ -68,10 +65,8 @@ class UrlToRoute{
         $routeToArr = explode("/", $route);
 
         if(count($urlToArr) == count($routeToArr)){
-//            print_r($urlToArr);
-//            print_r($routeToArr);
             for($i = 0; $i < count($urlToArr); $i++){
-                if(!$this->isSame($urlToArr[$i], $routeToArr[$i])){
+                if(!$this->compareItems($urlToArr[$i], $routeToArr[$i])){
                     return false;
                 }
             }
@@ -82,23 +77,10 @@ class UrlToRoute{
         }
     }
 
-    public function isSame($urlItem, $routeItem){
+    public function compareItems($urlItem, $routeItem){
         if(strlen($urlItem) > 0) {
             if (strpos($routeItem, "{") !== false) {
-                $this->arguments [] = $urlItem;
-                if (strpos($routeItem, ":d") !== false) {
-                    return (is_numeric($urlItem)) ? true : false;
-                }
-                elseif (strpos($routeItem, ":s") !== false) {
-                    for ($i = 0; $i < count($this->denied); $i++) {
-                        if(strpos($urlItem, $this->denied[$i]) !== false){
-                            return false;
-                        }
-                    }
-                    return true;
-                } else {
-                    return true;
-                }
+                return $this->checkParameter($urlItem, $routeItem);
             } else {
                 return ($urlItem == $routeItem) ? true : false;
             }
@@ -108,30 +90,53 @@ class UrlToRoute{
         }
     }
 
-    public function addRoutesUnusualParamsAccess($routes){
-        $resultRoutes = $routes;
-        $routePosition = 1;
-        foreach($routes as $route => $executer){
-            $routeItems = explode("/", $route);
-            $itemLevel = 0;
-            $newRoutes = [str_replace("?", "", $route) => $executer];
-            foreach ($routeItems as $item){
-                if(strpos($item, "?") !== false){
-                    //print_r(array_slice($routes, 0, 3)); //print_r(array_slice($routeItems, 0, 3));
-                    //echo implode("/", array_slice($routeItems, 0, $itemLevel)); echo "<br>";
-                    $newRoutes[str_replace("?", "", implode("/", array_slice($routeItems, 0, $itemLevel)))] = $executer;
-                }
-                $itemLevel++;
-            }
 
-            if(count($newRoutes) > 1){
-                $beforeRoutes = array_slice($resultRoutes, 0, $routePosition - 1);
-                $afterRoutes = array_slice($resultRoutes, $routePosition);
-                $resultRoutes = array_merge($beforeRoutes, $newRoutes, $afterRoutes);
-            }
-
-            $routePosition += count($newRoutes);
+    public function checkParameter($urlItem, $routeItem){
+        array_push($this->arguments, $urlItem);
+        if (strpos($routeItem, ":d") !== false) {
+            return (is_numeric($urlItem)) ? true : false;
         }
-        return $resultRoutes;
+        elseif (strpos($routeItem, ":s") !== false) {
+            for ($i = 0; $i < count($this->denied); $i++) {
+                if(strpos($urlItem, $this->denied[$i]) !== false){
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return true;
+        }
+    }
+
+    public function unnecessaryParametersGenerator($routeParameters){
+        foreach ($routeParameters as $key => $item){
+            if(strpos($item, "?") !== false){
+                yield $key => $item;
+            }
+        }
+    }
+    public function getCleanExtraRoute($routeParameters, $position){
+        return str_replace("?", "", implode("/", array_slice($routeParameters, 0, $position)));
+    }
+    public function addExtraRoutesForUnusualParams(&$routes){
+        $resultRoutes = $routes;
+        $routeListNumber = 1;
+
+        foreach($routes as $route => $executer){
+            $routeParameters = explode("/", $route);
+            $extraRoutes = [str_replace("?", "", $route) => $executer];
+            foreach ($this->unnecessaryParametersGenerator($routeParameters) as $position => $item){
+                $extraRoutes[$this->getCleanExtraRoute($routeParameters, $position)] = $executer;
+            }
+
+            if(count($extraRoutes) > 1){
+                $beforeRoutes = array_slice($resultRoutes, 0, $routeListNumber - 1);
+                $afterRoutes = array_slice($resultRoutes, $routeListNumber);
+                $resultRoutes = array_merge($beforeRoutes, $extraRoutes, $afterRoutes);
+            }
+
+            $routeListNumber += count($extraRoutes);
+        }
+        $routes = $resultRoutes;
     }
 }
