@@ -50,9 +50,15 @@ class UrlToRoute{
             elseif(in_array(substr($file, 0, strpos($file, "Controller")), [$urlToArr[$level], ucfirst($urlToArr[$level])])){
                 $extra_path = ($level > 0)? implode('\\', $path)."\\" : "";
                 $method = (count($urlToArr) <= $level + 1)? "index" : $urlToArr[$level + 1];
-                if(call_user_func([explode(".", self::$controllerBaseNamespace.$extra_path.$file)[0], "check"], $method)){
+
+                $var = explode(".", self::$controllerBaseNamespace.$extra_path.$file);
+                $controller = new $var[0]();
+                if($controller->check($method)){
                     return [$extra_path.explode(".", $file)[0], $method, array_slice($urlToArr, $level + 2)];
                 }
+//                if(call_user_func([explode(".", self::$controllerBaseNamespace.$extra_path.$file)[0], "check"], $method)){
+//                    return [$extra_path.explode(".", $file)[0], $method, array_slice($urlToArr, $level + 2)];
+//                }
             }
 
         }

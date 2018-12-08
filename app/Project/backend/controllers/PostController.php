@@ -1,12 +1,18 @@
 <?php
 namespace App\Project\backend\controllers;
 
-class PostController{
+use App\Kernel\Classes\Controller;
+
+class PostController extends Controller{
     public function index(){
         echo "index";
     }
     public function show($id = 1){
         echo "Post №".$id."<br>";
+
+        $items = ['a', 'b', 'c', 'd'];
+        $this->render("test", compact('items'));
+        //$this->redirect("/ru/post/show2", ['cat' => 10, 'id' => 44]);
     }
     public function show2($cat = 1, $id = 1){
         echo "Category: $cat, Post № $id <br>";

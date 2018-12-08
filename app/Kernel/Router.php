@@ -36,7 +36,8 @@ class Router{
         $controller = self::$controllerBaseNamespace.$controller;
 
         try{
-            call_user_func_array([$controller, $method], $arguments);
+            $controller = new $controller();
+            $controller->$method(...$arguments);
         } catch(\Throwable $e){
             call_user_func_array([self::$controllerBaseNamespace."HomeController", "index"], []);
             //echo "<br><br><h4 align='center'>Поймал ошибку!<br><br>".$e->getMessage()."</h4>";
