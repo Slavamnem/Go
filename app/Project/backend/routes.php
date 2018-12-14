@@ -3,7 +3,7 @@
 return [
     "" => "HomeController->index",
     "ru/test/game" => "TestController->game",
-    "en/test/money" => "TestController->money",
+    "en/test/money.txt" => "TestController->money",
     "ru/post/get/{message}" => "PostController->get",
     "ru/post/{id:d?}" => "PostController->show",
     //"ru/post/{update?}/{id:d?}" => "PostController->update",

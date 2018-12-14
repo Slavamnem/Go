@@ -1,6 +1,8 @@
 <?php
 namespace App\Kernel\Classes;
 
+use App\Kernel\Url;
+
 class UrlToRoute{
     public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
 

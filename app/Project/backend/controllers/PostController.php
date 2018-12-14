@@ -2,17 +2,28 @@
 namespace App\Project\backend\controllers;
 
 use App\Kernel\Classes\Controller;
+use App\Kernel\Classes\Facades\File;
+use App\Kernel\Classes\Facades\Db;
 
 class PostController extends Controller{
     public function index(){
-        echo "index";
+        dump("index");
+
+        File::save("all.txt", "some 12345");
+        echo File::get("all.txt");
+
+        Db::show();
+
+        //File::log("important information");
+        //File::log(json_encode(['a', 11, 'слово', 'y' => 'бла бла']), "json_ru");
     }
     public function show($id = 1){
         echo "Post №".$id."<br>";
 
         $items = ['a', 'b', 'c', 'd'];
-        $this->render("test", compact('items'));
+        $this->render("test", compact('items'), "layout");
         //$this->redirect("/ru/post/show2", ['cat' => 10, 'id' => 44]);
+
     }
     public function show2($cat = 1, $id = 1){
         echo "Category: $cat, Post № $id <br>";

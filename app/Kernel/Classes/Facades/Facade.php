@@ -6,6 +6,9 @@ class Facade{
     public static $realizator;
 
     public static function __callStatic($name, $arguments){
-        forward_static_call_array([self::$baseNamespace.static::$realizator, $name], $arguments);
+        $controllerClassName = self::$baseNamespace.static::$realizator;
+        $controller = new $controllerClassName();
+        return $controller->$name(...$arguments);
+        //forward_static_call_array([self::$baseNamespace.static::$realizator, $name], $arguments);
     }
 }

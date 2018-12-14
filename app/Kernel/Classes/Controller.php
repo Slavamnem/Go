@@ -7,10 +7,24 @@ class Controller implements ControllerInterface{
 
     const VIEWS_DIR = "./app/Project/frontend/views/";
 
-    public function render($view, $data = []){
-        extract($data);
-        include self::VIEWS_DIR.$view.".php";
+    public function render($view, $data = [], $layout = null, $layoutData = []){
+        if($layout){
+            extract($layoutData);
+            $content = $this->fileToVar(self::VIEWS_DIR.$view.".php", $data);
+            include self::VIEWS_DIR."layouts/{$layout}.php";
+        }
+        else{
+            extract($data);
+            include self::VIEWS_DIR.$view.".php";
+        }
     }
+    public function fileToVar($file, $params = []){
+        ob_start();
+        extract($params);
+        require($file);
+        return ob_get_clean();
+    }
+
     public function check($name) {
         $obj = new $this();
         return method_exists($obj, $name)? true : false;
