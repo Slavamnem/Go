@@ -12,6 +12,12 @@ class FileWorker
     }
     public function save($file, $data)
     {
+        $fileDir = implode("/", array_slice(explode("/", self::STORAGE_DIR.$file), 0, -1));
+
+        if (!file_exists($fileDir)){
+            mkdir($fileDir);
+        }
+
         file_put_contents(self::STORAGE_DIR.$file, $data,FILE_APPEND);
     }
 

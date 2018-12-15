@@ -12,7 +12,7 @@ class PostController extends Controller{
         File::save("all.txt", "some 12345");
         echo File::get("all.txt");
 
-        Db::show();
+        Db::makeCopy();
 
         //File::log("important information");
         //File::log(json_encode(['a', 11, 'слово', 'y' => 'бла бла']), "json_ru");

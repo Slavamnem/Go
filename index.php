@@ -4,6 +4,7 @@ use App\Kernel\Router;
 
 Router::sendRequest();
 
+dump($_REQUEST);
 ?>
 
 <div class="progress">
