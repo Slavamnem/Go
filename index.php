@@ -1,8 +1,9 @@
 <?php
 require __DIR__ . "/vendor/autoload.php";
-use App\Kernel\Router;
+use App\Kernel\Easy;
 
-Router::sendRequest();
+$app = new Easy();
+$app->start();
 
 dump($_REQUEST);
 ?>

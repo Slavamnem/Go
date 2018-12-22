@@ -28,3 +28,9 @@ if (!function_exists('getUrl')) {
         return \App\Kernel\Classes\Url::buildUrl();
     }
 }
+if (!function_exists('getRoutes')) {
+    function getRoutes($routesFile)
+    {
+        return require_once $routesFile;
+    }
+}
