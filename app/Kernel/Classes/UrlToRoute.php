@@ -1,10 +1,14 @@
 <?php
 namespace App\Kernel\Classes;
 
+use App\Kernel\Classes\Facades\Config;
+use App\Kernel\Classes\Interfaces\UrlToRouteInterface;
 use App\Kernel\Url;
 
-class UrlToRoute{
-    public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
+class UrlToRoute implements UrlToRouteInterface
+{
+
+    public $controllersDir;
 
     public $denied = [
         "'",
@@ -17,6 +21,11 @@ class UrlToRoute{
     ];
 
     public $arguments = [];
+
+    public function __construct()
+    {
+        $this->controllersDir = Config::get("app", "controllers-dir");
+    }
 
     public function getRouteFromUrl($url, $routes){
         if($url){
@@ -34,7 +43,7 @@ class UrlToRoute{
     }
 
     public function tryToFindController($url){
-        $result = $this->findControllerInDir(self::$controllerBaseNamespace, $url, 0);
+        $result = $this->findControllerInDir($this->controllersDir, $url, 0);
         return $result? $result : ["HomeController", "index", []];
     }
 
@@ -53,7 +62,7 @@ class UrlToRoute{
                 $extra_path = ($level > 0)? implode('\\', $path)."\\" : "";
                 $method = (count($urlToArr) <= $level + 1)? "index" : $urlToArr[$level + 1];
 
-                $var = explode(".", self::$controllerBaseNamespace.$extra_path.$file);
+                $var = explode(".", $this->controllersDir.$extra_path.$file);
                 $controller = new $var[0]();
                 if($controller->check($method)){
                     return [$extra_path.explode(".", $file)[0], $method, array_slice($urlToArr, $level + 2)];

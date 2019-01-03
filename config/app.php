@@ -10,4 +10,7 @@ return [
         ],
     ],
     'url-levels' => 10,
+    'controllers-dir' => "App\Project\backend\controllers\\",
+    'default-controller' => "App\Project\backend\controllers\\HomeController",
+    'routes-file' => "./app/Project/backend/routes.php"
 ];

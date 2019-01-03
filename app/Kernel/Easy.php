@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Kernel;
+use App\Kernel\Classes\Facades\SiteLoad;
 use App\Kernel\Classes\Response;
 use App\Kernel\Classes\Request;
 use App\Kernel\Classes\Facades\Config;
@@ -12,6 +13,7 @@ use PHPUnit\Runner\Exception;
 class Easy
 {
     public $workMode;
+
     public function initialize()
     {
         $this->workMode = Config::get("app", "work-mode");
@@ -20,13 +22,20 @@ class Easy
     public function start()
     {
         $this->initialize();
-        $request = new Request(); dump($request);
-        Response::getResponse($request);
+        $request = new Request();
+
+        if (SiteLoad::check()) {
+            //$response = new Response();
+            //$response->getResponse();
+            Response::getResponse($request);
+        } else {
+            SiteLoad::overloadResponse();
+        }
     }
 
 }
 
-
+//dump($request);
 
 //dump("test");
 //call_user_func([self::$controllerBaseNamespace.$controller, $method]);

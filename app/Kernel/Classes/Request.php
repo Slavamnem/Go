@@ -1,26 +1,32 @@
 <?php
 namespace App\Kernel\Classes;
 
-class Request{
-    public static $controllerBaseNamespace = "App\Project\backend\controllers\\";
-    public static $routesFile = "./app/Project/backend/routes.php";
+use App\Kernel\Classes\Facades\Config;
+use App\Kernel\Classes\Interfaces\UrlToRouteInterface;
+
+class Request
+{
+    public $controllersDir;
+    public $routesFile;
     public $controller;
     public $method;
     public $arguments;
 
     public function __construct()
     {
-        list($this->controller, $this->method, $this->arguments) = $this->getRequest();
+        $this->controllersDir = Config::get("app", "controllers-dir");
+        $this->routesFile = Config::get("app", "routes-file");
+        list($this->controller, $this->method, $this->arguments) = $this->buildRequest(new UrlToRoute());
     }
 
-    public function getRequest(){
+    public function buildRequest(UrlToRouteInterface $urlToRouter)
+    {
         $url = getUrl();
-        $routes = getRoutes(self::$routesFile);
+        $routes = getRoutes($this->routesFile);
 
-        $urlToRouter = new UrlToRoute();
         list($controller, $method, $arguments) = $urlToRouter->getRouteFromUrl($url, $routes);
 
-        $controller = self::$controllerBaseNamespace.$controller;
+        $controller = "{$this->controllersDir}{$controller}";
         return [$controller, $method, $arguments];
     }
 }
