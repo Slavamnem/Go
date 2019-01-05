@@ -10,7 +10,7 @@ class PostController extends Controller{
         dump("index");
 
         File::save("all.txt", "some 12345");
-        echo File::get("all.txt");
+        //echo File::get("all.txt");
 
         Db::makeCopy();
 

@@ -1,7 +1,8 @@
 <?php
 namespace App\Kernel\Classes\Facades;
 
-class Facade{
+class Facade
+{
     public static $baseNamespace = "App\Kernel\Classes\Facades\Realizators\\";
     public static $realizator;
 

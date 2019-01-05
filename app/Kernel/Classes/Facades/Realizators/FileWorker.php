@@ -53,4 +53,13 @@ class FileWorker
                 break;
         }
     }
+
+    public static function makeVar($file, $params = [])
+    {
+        ob_start();
+        extract($params);
+        require($file);
+        return ob_get_clean();
+    }
+
 }

@@ -1,13 +1,12 @@
 <?php
 
 namespace App\Kernel;
+
 use App\Kernel\Classes\Facades\SiteLoad;
 use App\Kernel\Classes\Response;
 use App\Kernel\Classes\Request;
 use App\Kernel\Classes\Facades\Config;
 use App\Kernel\Classes\Facades\File;
-use App\Kernel\Classes\UrlToRoute;
-use App\Project\backend\controllers;
 use PHPUnit\Runner\Exception;
 
 class Easy
@@ -25,8 +24,6 @@ class Easy
         $request = new Request();
 
         if (SiteLoad::check()) {
-            //$response = new Response();
-            //$response->getResponse();
             Response::getResponse($request);
         } else {
             SiteLoad::overloadResponse();
@@ -36,7 +33,6 @@ class Easy
 }
 
 //dump($request);
-
 //dump("test");
 //call_user_func([self::$controllerBaseNamespace.$controller, $method]);
 ////////////////////////////////////////////////////////

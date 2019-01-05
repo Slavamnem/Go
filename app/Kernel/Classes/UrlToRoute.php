@@ -24,98 +24,102 @@ class UrlToRoute implements UrlToRouteInterface
 
     public function __construct()
     {
-        $this->controllersDir = Config::get("app", "controllers-dir");
+        $this->controllersDir = Config::get("controllers", "controllers-dir");
     }
 
-    public function getRouteFromUrl($url, $routes){
-        if($url){
+    public function getRouteFromUrl($url, $routes)
+    {
+        if ($url) {
             $this->addExtraRoutesForUnusualParams($routes);
-            foreach($routes as $route => $executer){
-                if($this->isMatch($url, $route)){
+            foreach ($routes as $route => $executer) {
+                if ($this->isMatch($url, $route)) {
                     return array_merge(explode("->", $executer), [$this->arguments]);
                 }
             }
             return $this->tryToFindController($url);
-        }
-        else{
+        } else {
             return ["HomeController", "index", []];
         }
     }
 
-    public function tryToFindController($url){
+    public function tryToFindController($url)
+    {
         $result = $this->findControllerInDir($this->controllersDir, $url, 0);
-        return $result? $result : ["HomeController", "index", []];
+        return $result?? [Config::get("controllers", "default-controller-name"), "index", []];
     }
 
-    public function findControllerInDir($dir, $url, $level, $path = []){
+    public function findControllerInDir($dir, $url, $level, $path = [])
+    {
         $urlToArr = explode("/", $url);
-        $controllers = opendir($dir);
-        while (false !== ($file = readdir($controllers))) {
-
-            if(count($urlToArr) < $level + 1){ return false; }
-            elseif(is_dir($dir."/".$file) and !in_array($file, [".", ".."]) and $file == $urlToArr[$level]){
-                $new_path = array_merge($path, [$file]);
-                $result = $this->findControllerInDir($dir."/".$file, $url, $level+1, $new_path);
-                if($result) return $result;
-            }
-            elseif(in_array(substr($file, 0, strpos($file, "Controller")), [$urlToArr[$level], ucfirst($urlToArr[$level])])){
-                $extra_path = ($level > 0)? implode('\\', $path)."\\" : "";
+        $controllersDir = opendir($dir);
+        while (false !== ($file = readdir($controllersDir))) {
+            // if we haven't enough parameters to use controllers methods
+            if (count($urlToArr) < $level + 1) {
+                return false;
+            } elseif (is_dir($dir."/".$file) and !in_array($file, [".", ".."]) and $file == $urlToArr[$level]){
+                $newPath = array_merge($path, [$file]);
+                $result = $this->findControllerInDir($dir."/".$file, $url, $level+1, $newPath);
+                if ($result) return $result;
+            } elseif ($this->isRightController($file, $urlToArr[$level])) {
+                $extraPath = ($level > 0)? implode('\\', $path)."\\" : "";
                 $method = (count($urlToArr) <= $level + 1)? "index" : $urlToArr[$level + 1];
 
-                $var = explode(".", $this->controllersDir.$extra_path.$file);
+                $var = explode(".", $this->controllersDir.$extraPath.$file);
                 $controller = new $var[0]();
-                if($controller->check($method)){
-                    return [$extra_path.explode(".", $file)[0], $method, array_slice($urlToArr, $level + 2)];
+
+                if (method_exists($controller, $method)) {
+                    return [
+                        $extraPath.explode(".", $file)[0],
+                        $method,
+                        $this->getArgumentsFromUrl($urlToArr, $level)
+                    ];
                 }
-//                if(call_user_func([explode(".", self::$controllerBaseNamespace.$extra_path.$file)[0], "check"], $method)){
-//                    return [$extra_path.explode(".", $file)[0], $method, array_slice($urlToArr, $level + 2)];
-//                }
             }
 
         }
         return false;
     }
 
-    public function isMatch($url, $route){
+    public function isRightController($file, $urlItem)
+    {
+        return in_array(Controller::getNameFromFile($file), [$urlItem, ucfirst($urlItem)]);
+    }
+
+    public function getArgumentsFromUrl($urlToArr, $level)
+    {
+        return array_slice($urlToArr, $level + 2);
+    }
+
+    public function isMatch($url, $route)
+    {
         $this->arguments = [];
         $urlToArr = explode("/", $url);
         $routeToArr = explode("/", $route);
 
-        if(count($urlToArr) == count($routeToArr)){
-            for($i = 0; $i < count($urlToArr); $i++){
-                if(!$this->compareItems($urlToArr[$i], $routeToArr[$i])){
-                    return false;
-                }
-            }
-            return true;
-        }
-        else{
-            return false;
-        }
+        return ArrayHelper::isMatch($urlToArr, $routeToArr, $this, "compareItems");
     }
 
-    public function compareItems($urlItem, $routeItem){
-        if(strlen($urlItem) > 0) {
+    public function compareItems($urlItem, $routeItem)
+    {
+        if (strlen($urlItem) > 0) {
             if (strpos($routeItem, "{") !== false) {
                 return $this->checkParameter($urlItem, $routeItem);
             } else {
                 return ($urlItem == $routeItem) ? true : false;
             }
-        }
-        else{
+        } else {
             return false;
         }
     }
 
-
-    public function checkParameter($urlItem, $routeItem){
+    public function checkParameter($urlItem, $routeItem)
+    {
         array_push($this->arguments, $urlItem);
         if (strpos($routeItem, ":d") !== false) {
             return (is_numeric($urlItem)) ? true : false;
-        }
-        elseif (strpos($routeItem, ":s") !== false) {
+        } elseif (strpos($routeItem, ":s") !== false) {
             for ($i = 0; $i < count($this->denied); $i++) {
-                if(strpos($urlItem, $this->denied[$i]) !== false){
+                if (strpos($urlItem, $this->denied[$i]) !== false) {
                     return false;
                 }
             }
@@ -125,31 +129,21 @@ class UrlToRoute implements UrlToRouteInterface
         }
     }
 
-    public function unnecessaryParametersGenerator($routeParameters){
-        foreach ($routeParameters as $key => $item){
-            if(strpos($item, "?") !== false){
-                yield $key => $item;
-            }
-        }
-    }
-    public function getCleanExtraRoute($routeParameters, $position){
-        return str_replace("?", "", implode("/", array_slice($routeParameters, 0, $position)));
-    }
-    public function addExtraRoutesForUnusualParams(&$routes){
+    public function addExtraRoutesForUnusualParams(&$routes)
+    {
         $resultRoutes = $routes;
         $routeListNumber = 1;
 
-        foreach($routes as $route => $executer){
-            $routeParameters = explode("/", $route);
-            $extraRoutes = [str_replace("?", "", $route) => $executer];
-            foreach ($this->unnecessaryParametersGenerator($routeParameters) as $position => $item){
-                $extraRoutes[$this->getCleanExtraRoute($routeParameters, $position)] = $executer;
+        foreach ($routes as $route => $executer) {
+            $routeParameters = Route::getItems($route);
+            $extraRoutes = Route::getCleanRouter($route, $executer);
+
+            foreach (Route::unnecessaryParametersGenerator($routeParameters) as $position => $item){
+                $extraRoutes[Route::getCleanRouteFromItems($routeParameters, $position)] = $executer;
             }
 
-            if(count($extraRoutes) > 1){
-                $beforeRoutes = array_slice($resultRoutes, 0, $routeListNumber - 1);
-                $afterRoutes = array_slice($resultRoutes, $routeListNumber);
-                $resultRoutes = array_merge($beforeRoutes, $extraRoutes, $afterRoutes);
+            if (count($extraRoutes) > 1) {
+                Route::addIntoList($resultRoutes, $extraRoutes, $routeListNumber);
             }
 
             $routeListNumber += count($extraRoutes);

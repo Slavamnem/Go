@@ -13,4 +13,5 @@ interface UrlToRouteInterface{
     public function tryToFindController($url);
     public function compareItems($urlItem, $routeItem);
     public function isMatch($url, $route);
+
 }

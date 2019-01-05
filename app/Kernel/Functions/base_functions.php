@@ -6,6 +6,7 @@ if (!function_exists('dd')) {
         echo "dd!";
     }
 }
+
 if (!function_exists('dump')) {
     function dump($data)
     {
@@ -22,15 +23,17 @@ if (!function_exists('dump')) {
         <?php
     }
 }
+
 if (!function_exists('getUrl')) {
     function getUrl()
     {
         return \App\Kernel\Classes\Url::buildUrl();
     }
 }
+
 if (!function_exists('getRoutes')) {
-    function getRoutes($routesFile)
+    function getRoutes()
     {
-        return require_once $routesFile;
+        return require_once \App\Kernel\Classes\Facades\Config::get("app", "routes-file");
     }
 }

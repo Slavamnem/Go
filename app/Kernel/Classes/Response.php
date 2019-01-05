@@ -18,6 +18,6 @@ class Response
 
     public static function defaultBehaviour()
     {
-        call_user_func_array([Config::get("app", "default-controller"), "index"], []);
+        call_user_func_array([Config::get("controllers", "default-controller"), "index"], []);
     }
 }
