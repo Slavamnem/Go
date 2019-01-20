@@ -24,4 +24,20 @@ class ArrayHelper
             return false;
         }
     }
+
+    public static function getFields($data, $field)
+    {
+        $result = [];
+        if (is_array($data)) {
+            foreach ($data as $item) {
+                $result[] = $item[$field];
+            }
+        } elseif (is_object($data)) {
+            foreach ($data as $item) {
+                $result[] = $item->$field;
+            }
+        }
+
+        return $result;
+    }
 }

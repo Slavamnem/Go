@@ -5,7 +5,7 @@ use App\Kernel\Easy;
 $app = new Easy();
 $app->start();
 
-dump($_REQUEST);
+//dump($_REQUEST);
 ?>
 
 <div class="progress">

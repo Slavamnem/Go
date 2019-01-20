@@ -22,4 +22,10 @@ class PdoHelper
 
         return new \PDO($dsn, $login, $password, $opt);
     }
+
+    public static function getRes($sql, $mode = "fetchAll"){
+        $stmp = self::getPdo()->prepare($sql);
+        $stmp->execute();
+        return $stmp->$mode();
+    }
 }

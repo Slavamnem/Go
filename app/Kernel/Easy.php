@@ -23,6 +23,13 @@ class Easy
         $this->initialize();
         $request = new Request();
 
+        $connector = connector();
+        $connector->send([
+            'sender' => 'App\Kernel\Easy',
+            'receiver' => 'App\Kernel\Classes\Facades\Realizators\FileWorker',
+            'data' => [1,2,3]
+        ]);
+
         if (SiteLoad::check()) {
             Response::getResponse($request);
         } else {
@@ -32,13 +39,18 @@ class Easy
 
 }
 
+//$file = new FileService()
+//$file->clear();
+//$file->delete();
+
+
 //dump($request);
 //dump("test");
 //call_user_func([self::$controllerBaseNamespace.$controller, $method]);
 ////////////////////////////////////////////////////////
 //echo "<br>_____________________________________<br>";
 //return;
-//File::save("test");
+//FileService::save("test");
 //echo "<br>";
 //echo Config::get("app", "lang");
 //echo "<br>";

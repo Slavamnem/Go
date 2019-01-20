@@ -1,0 +1,34 @@
+{"createTablesSql":
+["CREATE TABLE likes (\r\nid int(11) auto_increment,\r\nmaker_id int(11),\r\nreceiver_id
+int(11),\r\nPRIMARY KEY (id),\r\nFOREIGN KEY (maker_id) REFERENCES users(id),\r\nFOREIGN
+KEY (receiver_id) REFERENCES users(id)\r\n)","CREATE TABLE posts (\r\nid int(11) auto_increment,
+\r\ntitle varchar(255),\r\ntext text,\r\nauthor int(11),\r\nPRIMARY KEY (id),\r\nFOREIGN KEY
+ (author) REFERENCES users(id)\r\n)","CREATE TABLE posts3 (\r\nid int(11) auto_increment,\r\ntitle
+ varchar(255),\r\ntext text,\r\nauthor int(11),\r\nPRIMARY KEY (id),\r\nFOREIGN KEY (author)
+ REFERENCES users(id)\r\n)","CREATE TABLE users (\r\nid int(11) auto_increment,\r\nlogin
+  varchar(255),\r\npassword varchar(255),\r\nfull_name varchar(255),\r\ndate_add date,\
+  r\nPRIMARY KEY (id)\r\n)"],
+
+  "insertDataSql":[
+
+  "INSERT INTO likes VALUES('1', '1', '2'), ('2', '1', '3'), ('3', '2', '1')",
+
+  "INSERT INTO posts VALUES
+    ('1', 'box', 'loma wins again!', '1'),
+    ('2', 'boxing', 'usuk win!', '1'),
+    ('3', 'footbal', 'dinamo plays again', '2'),
+    ('4', 'dance', 'ama dancer ama ma dancer!', '2'),
+    ('5', 'nature', 'birds fly!!', '3'),
+    ('6', 'test', 'test text', '')",
+
+  "INSERT INTO posts3 VALUES",
+
+  "INSERT INTO users VALUES
+    ('1', 'slavamnem', '1234', 'Slava Zelinskiy', '2018-12-18'),
+    ('2', 'vladik123', '1234', 'Vlad Butnaru', '2018-12-18'),
+    ('3', 'dimka8', '333555', 'Dima Hutor', '2018-12-03'),
+    ('4', 'oleg', '1234', 'Oleg Petrov', '2018-12-12'),
+    ('5', 'nasta', '1234', 'Nasta Ivanova', '2018-12-12')"
+  ],
+
+  "createTableTemplate":"CREATE TABLE"}

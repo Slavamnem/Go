@@ -1,15 +1,18 @@
 <?php
 namespace App\Kernel\Classes\Facades\Realizators;
 
-class FileWorker
+use App\Kernel\Traits\Connectable;
+use App\Kernel\Classes\Interfaces\ConnectableInterface;
+
+class FileWorker implements ConnectableInterface
 {
+    use Connectable;
+
     const LOG_DIR = "./app/Kernel/Data/Logs/";
     const STORAGE_DIR = "./app/Kernel/Data/Storage/";
+    const PROJECT_STORAGE_DIR = "./app/Project/Storage/";
 
-    public function __construct()
-    {
-
-    }
+    public function __construct(){}
 
     public function save($file, $data)
     {
@@ -19,12 +22,12 @@ class FileWorker
             mkdir($fileDir);
         }
 
-        file_put_contents(self::STORAGE_DIR.$file, $data,FILE_APPEND);
+        file_put_contents(self::PROJECT_STORAGE_DIR.$file, $data,FILE_APPEND);
     }
 
     public function get($file)
     {
-        return file_get_contents(self::STORAGE_DIR.$file);
+        return file_get_contents(self::PROJECT_STORAGE_DIR.$file);
     }
 
     public function log($data, $type = "text")
@@ -34,10 +37,12 @@ class FileWorker
         $this->appendTime($data);
         file_put_contents($logFileName, $data,FILE_APPEND);
     }
+
     public function appendTime(&$data)
     {
         $data = date("[Y-m-d H:i:s]: ").$data.PHP_EOL;
     }
+
     public function setType(&$data, $type)
     {
         switch ($type) {
@@ -62,4 +67,8 @@ class FileWorker
         return ob_get_clean();
     }
 
+    public function messageReact($args)
+    {
+        dump("ura!");
+    }
 }

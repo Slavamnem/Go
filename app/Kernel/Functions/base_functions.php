@@ -37,3 +37,21 @@ if (!function_exists('getRoutes')) {
         return require_once \App\Kernel\Classes\Facades\Config::get("app", "routes-file");
     }
 }
+
+if (!function_exists('show')) {
+    function show($data)
+    {
+        echo($data."<br>");
+    }
+}
+
+if (!function_exists('connector')) {
+    function connector()
+    {
+        while (true) {
+            $args = yield;
+            $receiver = new $args['receiver']();
+            $receiver->getMessage($args);
+        }
+    }
+}

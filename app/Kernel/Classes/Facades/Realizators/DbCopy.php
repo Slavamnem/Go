@@ -4,34 +4,85 @@ namespace App\Kernel\Classes\Facades\Realizators;
 use App\Kernel\Classes\Facades\Config;
 use App\Kernel\Classes\Facades\Db;
 use App\Kernel\Classes\Facades\File;
+use App\Kernel\Classes\PdoHelper;
 
 class DbCopy{
     private $dbname;
     private $pdo;
     public $createTablesSql;
     public $insertDataSql;
-    public $createTableTemplate = "CREATE TABLE";
 
     public function __construct($pdo, $dbname)
     {
-        $this->pdo = $pdo;
+        $this->pdo = $pdo ?? PdoHelper::getPdo();
         $this->dbname = $dbname;
     }
 
     public function create($tables)
     {
-        foreach ($tables as $table) {
-            $tableName = array_values($table)[0];
+        foreach ($tables as $tableName) {
             $fields = Db::getFields($tableName);
-            $this->createTablesSql[] = $this->getCreateTableSql($tableName, $fields);
+            $this->getCreateTableSql($tableName, $fields);
+            $this->getInsertDataSql($tableName, $fields);
+        }
+
+        $this->save();
+    }
+
+    public function save()
+    {
+        $json = json_encode($this);
+        $name = "copy-".date("Y-m-d-H-i-s");
+        File::save("Copies/{$name}.txt", $json);
+    }
+
+    public static function restore($data)
+    {
+        $allQueries = $data->createTablesSql + $data->insertDataSql;
+        foreach ($allQueries as $query) {
+            dump($query);
+            $stmp = PdoHelper::getPdo()->prepare($query);
+            $stmp->execute();
         }
     }
 
-    public function deleteComa(&$value){
-        $position = strrpos($value, ",");
-        $value = substr($value, 0, $position).substr($value, $position+1);
-        $value = str_replace("posts", "posts3", $value);
+    ////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// Insert sql block ////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+    public function getInsertDataSql($tableName, $fields)
+    {
+        $result = $this->addInsertTitle($tableName);
+        if ($this->addValues($result, $tableName)) {
+            $this->insertDataSql[] = $result;
+        }
     }
+
+    public function addInsertTitle($tableName)
+    {
+        return "INSERT INTO {$tableName} VALUES";
+    }
+
+    public function addValues(&$result, $tableName)
+    {
+        $stmp = $this->pdo->prepare("SELECT * FROM {$tableName}");
+        $stmp->execute();
+
+        $values = [];
+        foreach ($stmp->fetchAll() as $row) {
+            $values[] = "('".implode("', '", array_values($row))."')";
+        }
+
+        if ($values) {
+            $result .= implode(", ", $values);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// Create table sql block ////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
 
     public function getCreateTableSql($tableName, $fields)
     {
@@ -42,7 +93,7 @@ class DbCopy{
         $result .= ")";
         $this->deleteComa($result);
 
-        return str_replace("<br>", PHP_EOL, $result);
+        $this->createTablesSql[] = str_replace("<br>", PHP_EOL, $result); //TODO
     }
 
     function addCreateTitleBlock($tableName)
@@ -98,6 +149,12 @@ class DbCopy{
         foreach ($references as $reference){
             yield $reference;
         }
+    }
+
+    public function deleteComa(&$value)
+    {
+        $position = strrpos($value, ",");
+        $value = substr($value, 0, $position).substr($value, $position+1);
     }
 
     public function test()
