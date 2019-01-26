@@ -9,6 +9,9 @@ use App\Kernel\Classes\FileService;
 
 class PostController extends Controller{
 
+    public function index3(){
+        dump("site works");
+    }
     public function index2()
     {
 //        dump(Db::selectFromTable("_posts", [
@@ -21,14 +24,20 @@ class PostController extends Controller{
 //            ['title' => 777, 'text' => 777],
 //        ]);
 
-        dump(Db::getTableSize("_posts"));
+        //dump(Db::getTableSize("_posts"));
 
         //$db = new Database();
         //dump($db->getTableSize("_posts"));
 
         //dump(Db::selectForPage("_posts", 5, 3));
 
-        dump(Db::getTableColumns("_posts"));
+        //dump(Db::getTableColumns("_posts"));
+
+        //dump(DB::selectFromTable("_posts3"));
+        //Db::truncate("_posts3", 3);
+        dump(DB::selectFromTable("_posts3"));
+
+        //dump(debug_backtrace());
     }
 
 

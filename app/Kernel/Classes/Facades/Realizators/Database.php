@@ -29,6 +29,12 @@ class Database
     {
         $stmp = $this->pdo->prepare($sql);
         $stmp->execute($params);
+
+        foreach ($params as &$param) {
+            $param = str_replace("\\\\", "\\", $param);
+        }
+        dump($params);
+        dump($stmp);
         return $single? $stmp->fetch() : $stmp->fetchAll();
     }
 
@@ -62,8 +68,8 @@ class Database
 
     public function getTableColumns($table)
     {
-        $sql = SqlTemplates::selectColumns($table); //dump($sql);
-        $columns = ArrayHelper::getFields(PdoHelper::getRes($sql), "Field");
+        $sql = SqlTemplates::selectColumns($table);
+        $columns = ArrayHelper::getField(PdoHelper::getRes($sql), "Field");
         return $columns;
     }
 
@@ -130,7 +136,13 @@ class Database
     public function truncate($table, $size = 0)
     {
         if ($size) {
-            //$this->statement("DELETE FROM");
+            $sql = "DELETE FROM {$table} 
+              WHERE id NOT IN
+                (SELECT id FROM 
+                  (SELECT id FROM {$table} ORDER BY id ASC LIMIT {$size})
+                x)
+            ";
+            $this->statement($sql);
         } else {
             $this->statement("TRUNCATE {$table}");
         }

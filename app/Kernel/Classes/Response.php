@@ -1,17 +1,19 @@
 <?php
 namespace App\Kernel\Classes;
 
+use App\Kernel\Classes\ArgumentObjects\RequestHandlerData;
 use App\Kernel\Classes\Facades\Config;
 
 class Response
 {
-    public static function getResponse(Request $request)
+    public static function getResponse(RequestHandlerData $handlerData)
     {
         try {
-            $controller = new $request->controller();
-            $method = $request->method;
-            $controller->$method(...$request->arguments);
+            $controller = $handlerData->getController();
+            $method = $handlerData->getMethod();
+            $controller->$method(...$handlerData->getArguments());
         } catch(\Throwable $e) {
+            dump($e->getMessage());
             self::defaultBehaviour();
         }
     }

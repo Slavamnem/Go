@@ -1,5 +1,5 @@
 <?php
-namespace App\Kernel\Classes\Facades\Realizators;
+namespace App\Kernel\Classes;
 
 use App\Kernel\Classes\Facades\Db;
 use App\Kernel\Classes\Facades\File;
@@ -8,7 +8,7 @@ use App\Kernel\Classes\Request;
 class SiteLoad
 {
     const REQUESTS_DIR = "./app/Kernel/Data/Requests/";
-    const MINUTE_LIMIT = 5;
+    const MINUTE_LIMIT = 500;
     const DAY_LIMIT = 10000;
 
     public $currentLimit;
@@ -19,7 +19,19 @@ class SiteLoad
         $this->currentLimit = self::MINUTE_LIMIT;
     }
 
-    public function check(Request $request)
+    // static accessors
+    public static function isTooHighLoad(Request $request){
+        $siteLoad = new self();
+        return !$siteLoad->isNormalLoad($request);
+    }
+
+    public static function overloadResponse(){
+        $siteLoad = new self();
+        $siteLoad->overload();
+    }
+    // end section
+
+    public function isNormalLoad(Request $request)
     {
         $frequency = $this->countFrequency($request); dump($frequency);
         $this->rememberRequest($request);
@@ -27,12 +39,17 @@ class SiteLoad
         return $this->currentLimit >= $frequency;
     }
 
-    public function rememberRequest(Request $request)
+    public function overload()
+    {
+        dump("Нагрузка на сайт слишком велика. Подождите пару минут.");
+    }
+
+    private function rememberRequest(Request $request)
     {
         File::setRequest(serialize($request));
     }
 
-    public function countFrequency(Request $request)
+    private function countFrequency(Request $request)
     {
         $total = 0;
         foreach ($this->getRequests() as $currentRequest) {
@@ -49,14 +66,10 @@ class SiteLoad
         return $total;
     }
 
-    public function getRequests()
+    private function getRequests()
     {
         $requestsFileName = self::REQUESTS_DIR . date("Y.m.d");
         return file($requestsFileName);
     }
 
-    public function overloadResponse()
-    {
-        dump("Нагрузка на сайт слишком велика. Подождите пару минут.");
-    }
 }

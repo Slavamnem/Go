@@ -1,7 +1,9 @@
 <?php
 
 return [
-    'work-mode' => 'production',
+    'work-mode' => \App\Kernel\Classes\DevelopWorkMode::class,
+    'log-file' => "./app/Kernel/Data/Logs/Log.txt",
+    'errors-mode' => E_ALL,
     'lang' => 'ru',
     'messages' => [
         'not-found' => [

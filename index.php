@@ -1,9 +1,8 @@
 <?php
 require __DIR__ . "/vendor/autoload.php";
-use App\Kernel\Easy;
+use App\Kernel\App;
 
-$app = new Easy();
-$app->start();
+App::start();
 
 //dump($_REQUEST);
 ?>

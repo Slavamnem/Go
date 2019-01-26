@@ -9,6 +9,7 @@ class FileWorker implements ConnectableInterface
     use Connectable;
 
     const LOG_DIR = "./app/Kernel/Data/Logs/";
+    const REQUESTS_DIR = "./app/Kernel/Data/Requests/";
     const STORAGE_DIR = "./app/Kernel/Data/Storage/";
     const PROJECT_STORAGE_DIR = "./app/Project/Storage/";
 
@@ -22,15 +23,23 @@ class FileWorker implements ConnectableInterface
             mkdir($fileDir);
         }
 
-        file_put_contents(self::PROJECT_STORAGE_DIR.$file, $data,FILE_APPEND);
+        file_put_contents(self::PROJECT_STORAGE_DIR . $file, $data,FILE_APPEND);
     }
 
     public function get($file)
     {
-        return file_get_contents(self::PROJECT_STORAGE_DIR.$file);
+        return file_get_contents(self::PROJECT_STORAGE_DIR . $file);
     }
 
-    public function log($data, $type = "text")
+    public function setRequest($data, $type = "text") // TODO in one func
+    {
+        $requestsFileName = self::REQUESTS_DIR . date("Y.m.d");
+        $this->setType($data, $type);
+        $this->appendTime($data);
+        file_put_contents($requestsFileName, $data.PHP_EOL,FILE_APPEND);
+    }
+
+    public function log($data, $type = "text") //TODO in one func
     {
         $logFileName = self::LOG_DIR.date("Y.m.d");
         $this->setType($data, $type);

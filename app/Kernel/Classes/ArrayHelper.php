@@ -25,7 +25,7 @@ class ArrayHelper
         }
     }
 
-    public static function getFields($data, $field)
+    public static function getField($data, $field)
     {
         $result = [];
         if (is_array($data)) {

@@ -3,12 +3,12 @@ namespace App\Kernel\Classes;
 
 class Route
 {
-    public static function getItems($route)
+    public function getItems($route)
     {
         return explode("/", $route);
     }
 
-    public static function addIntoList(&$resultRoutes, $extraRoutes, $position = null)
+    public function addIntoRoutesList(&$resultRoutes, $extraRoutes, $position = null)
     {
         if ($position) {
             $beforeRoutes = array_slice($resultRoutes, 0, $position - 1);
@@ -19,22 +19,44 @@ class Route
         }
     }
 
-    public static function getCleanRouter($route, $executer)
+    public function getCleanRouter($route, $executer)
     {
         return [str_replace("?", "", $route) => $executer];
     }
 
-    public static function getCleanRouteFromItems($items, $position)
+    public function getCleanRouteFromItems($items, $position)
     {
         return str_replace("?", "", implode("/", array_slice($items, 0, $position)));
     }
 
-    public static function unnecessaryParametersGenerator($routeItems)
+    public function unnecessaryParametersGenerator($routeItems)
     {
         foreach ($routeItems as $key => $item) {
             if (strpos($item, "?") !== false){
                 yield $key => $item;
             }
         }
+    }
+
+    public function addExtraRoutesForUnusualParams(&$routes)
+    {
+        $resultRoutes = $routes;
+        $routesListPosition = 1;
+
+        foreach ($routes as $route => $executer) {
+            $routeParameters = $this->getItems($route);
+            $extraRoutes = $this->getCleanRouter($route, $executer);
+
+            foreach ($this->unnecessaryParametersGenerator($routeParameters) as $position => $item){
+                $extraRoutes[$this->getCleanRouteFromItems($routeParameters, $position)] = $executer;
+            }
+
+            if (count($extraRoutes) > 1) {
+                $this->addIntoRoutesList($resultRoutes, $extraRoutes, $routesListPosition);
+            }
+
+            $routesListPosition += count($extraRoutes);
+        }
+        $routes = $resultRoutes;
     }
 }
