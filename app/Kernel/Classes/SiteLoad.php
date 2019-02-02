@@ -11,8 +11,8 @@ class SiteLoad
     const MINUTE_LIMIT = 500;
     const DAY_LIMIT = 10000;
 
-    public $currentLimit;
-    public $startTime;
+    private $currentLimit;
+    private $startTime;
 
     public function __construct(){
         $this->startTime = date("Y-m-d H:i:s", strtotime("last minute"));
@@ -69,7 +69,8 @@ class SiteLoad
     private function getRequests()
     {
         $requestsFileName = self::REQUESTS_DIR . date("Y.m.d");
-        return file($requestsFileName);
+        $requests = file($requestsFileName);
+        return $requests?? [];
     }
 
 }

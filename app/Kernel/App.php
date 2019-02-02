@@ -22,6 +22,7 @@ class App
     public static function start()
     {
         App::initialize();
+
         $request = new Request();
         if (SiteLoad::isTooHighLoad($request)) {
             SiteLoad::overloadResponse();
@@ -32,8 +33,11 @@ class App
 
 }
 
-//dump(App::$workMode); dump(App::$workMode->getErrorsMode()); echo 9/0;
 
+
+
+
+//dump(App::$workMode); dump(App::$workMode->getErrorsMode()); echo 9/0;
 //        $connector = connector();
 //        $connector->send([
 //            'sender' => 'App\Kernel\App',
@@ -41,11 +45,9 @@ class App
 //            'data' => [1,2,3]
 //        ]);
 
-
 //$file = new FileService()
 //$file->clear();
 //$file->delete();
-
 
 //dump($request);
 //dump("test");

@@ -36,7 +36,7 @@ class DbCopy{
         File::save("Copies/{$name}.txt", $json);
     }
 
-    public static function restore($data)
+    public static function restore($data) //TODO доделать
     {
         $allQueries = $data->createTablesSql + $data->insertDataSql;
         foreach ($allQueries as $query) {
@@ -49,6 +49,7 @@ class DbCopy{
     ////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////// Insert sql block ////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
+    ///
     public function getInsertDataSql($tableName, $fields)
     {
         $result = $this->addInsertTitle($tableName);
@@ -159,7 +160,6 @@ class DbCopy{
 
     public function test()
     {
-        //dump($this->createTablesSql[0]);
         $stmp = $this->pdo->prepare($this->createTablesSql[1]);
         echo $stmp->execute();
     }

@@ -9,6 +9,7 @@ namespace App\Kernel\Classes;
 
 use App\Kernel\Classes\Interfaces\LogInterface;
 
-class Log implements LogInterface {
-
+class Log implements LogInterface
+{
+    // TODO make it!
 }

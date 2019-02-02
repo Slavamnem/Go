@@ -8,6 +8,11 @@ class DataController{
         echo "Data Controller welcome!!!<br>";
         echo $message;
     }
+
+    public function test(){
+        echo "Data Controller welcome TEST TEST TEST!!!<br>";
+    }
+
     public function check($name) {
         return method_exists(__CLASS__, $name)? true : false;
     }

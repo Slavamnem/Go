@@ -38,7 +38,7 @@ class Route
         }
     }
 
-    public function addExtraRoutesForUnusualParams(&$routes)
+    public function addExtraRoutesForUnusualParams(&$routes) // TODO неплохо бы отрефакторить
     {
         $resultRoutes = $routes;
         $routesListPosition = 1;

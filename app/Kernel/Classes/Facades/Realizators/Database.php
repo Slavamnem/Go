@@ -33,8 +33,7 @@ class Database
         foreach ($params as &$param) {
             $param = str_replace("\\\\", "\\", $param);
         }
-        dump($params);
-        dump($stmp);
+        //dump($params); dump($stmp);
         return $single? $stmp->fetch() : $stmp->fetchAll();
     }
 
@@ -48,16 +47,19 @@ class Database
     {
         if ($joinTables) {
             $sql = SqlTemplates::select($table);
-            foreach ($joinTables as $joinTable => $joinColumns) {
-                $sql .= " LEFT JOIN {$joinTable} ON {$table}.{$joinColumns[0]} = {$joinTable}.{$joinColumns[1]}";
-            }
-
-            return PdoHelper::getRes($sql);
+            $sql = $this->addJoins($sql, $table, $joinTables);
         } else {
-            $stmp = $this->pdo->prepare(SqlTemplates::select($table));
-            $stmp->execute();
-            return $stmp->fetchAll();
+            $sql = SqlTemplates::select($table);
         }
+        return PdoHelper::getRes($sql);
+    }
+
+    public function addJoins($sql, $currentTable, $joinTables)
+    {
+        foreach ($joinTables as $joinTable => $joinColumns) {
+            $sql .= " LEFT JOIN {$joinTable} ON {$currentTable}.{$joinColumns[0]} = {$joinTable}.{$joinColumns[1]}";
+        }
+        return $sql;
     }
 
     public function getTableSize($table)
@@ -123,8 +125,7 @@ class Database
 
     public function delete($sql, $params = [])
     {
-        $stmp = $this->pdo->prepare($sql);
-        $stmp->execute($params);
+        $this->statement($sql, $params);
     }
 
     public function statement($sql, $params = [])
@@ -153,28 +154,11 @@ class Database
         $tables = $this->getTables();
         $copy = new DbCopy($this->pdo, $this->dbName);
         $copy->create($tables);
-        //$copy->test();
-
-        //FileService::save("reserve/2.txt", serialize($copy));
-        echo "<br>";
-        //dump(json_encode($copy));
-        echo "<br>";
-        //dump(json_decode(json_encode($copy)));
-        $o = json_decode(json_encode($copy));
-        //dump($o);
-        //dump($o->createTablesSql);
-        //echo serialize($copy);
-        //$obj = unserialize(serialize($copy));
-        //dump($obj);
-        //$obj->test();
-
-        //FileService::save("reserve/1.txt", json_encode($copy));
-       // dump($tables);
     }
 
-    public function restore($date = null)
+    public function restore($date = null) // TODO доделать
     {
-        dump("restore!");
+        //dump("restore!");
         $copiesDir = opendir(self::COPIES_DIR);
         while (false !== ($file = readdir($copiesDir))) {
             if (count(explode("-", $date)) == 6) {
@@ -184,9 +168,7 @@ class Database
                     dump($copy);
 
                     DbCopy::restore($copy);
-                    //$copy->restore();
-                    //dump($file);
-                    dump("found!");
+                    //dump("found!");
                 }
             } elseif (count(explode("-", $date)) == 3) {
 
@@ -213,21 +195,18 @@ class Database
         return $stmp->fetchAll();
     }
 
-    public function show()
+    public function show() //TODO какие-то опыты, удалит потом
     {
         $stmp = $this->pdo->prepare("SELECT * FROM users WHERE id < :id");
         $stmp->execute(['id' => 4]);
 
-       // dump($stmp->fetchAll());
         $users = $stmp->fetchAll();
         foreach ($users as $user){
             dump($user);
         }
 
-        //$stmp = $this->pdo->prepare("SELECT login FROM users WHERE id = :id");
         $stmp = $this->pdo->prepare("SELECT COUNT (id) FROM users");
-        $stmp->execute();//['id' => 3]);
-        //$res = $stmp->fetchColumn();
+        $stmp->execute();
         dump($stmp->fetchAll());
     }
 

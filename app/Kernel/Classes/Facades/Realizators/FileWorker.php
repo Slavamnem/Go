@@ -1,6 +1,7 @@
 <?php
 namespace App\Kernel\Classes\Facades\Realizators;
 
+use App\Kernel\Classes\ArgumentObjects\FileData;
 use App\Kernel\Traits\Connectable;
 use App\Kernel\Classes\Interfaces\ConnectableInterface;
 
@@ -17,13 +18,14 @@ class FileWorker implements ConnectableInterface
 
     public function save($file, $data)
     {
-        $fileDir = implode("/", array_slice(explode("/", self::STORAGE_DIR.$file), 0, -1));
-
-        if (!file_exists($fileDir)){
-            mkdir($fileDir);
-        }
-
         file_put_contents(self::PROJECT_STORAGE_DIR . $file, $data,FILE_APPEND);
+    }
+
+    public function createDir($dir)
+    {
+        if (!file_exists($dir)){
+            mkdir($dir);
+        }
     }
 
     public function get($file)
@@ -31,28 +33,31 @@ class FileWorker implements ConnectableInterface
         return file_get_contents(self::PROJECT_STORAGE_DIR . $file);
     }
 
-    public function setRequest($data, $type = "text") // TODO in one func
+    public function setRequest($data, $type = "text")
     {
-        $requestsFileName = self::REQUESTS_DIR . date("Y.m.d");
-        $this->setType($data, $type);
+        $this->fileWrite(new FileData($data, self::REQUESTS_DIR, $type, FILE_APPEND));
+    }
+
+    public function log($data, $type = "text")
+    {
+        $this->fileWrite(new FileData($data, self::LOG_DIR, $type, FILE_APPEND));
+    }
+
+    private function fileWrite(FileData $fileData)
+    {
+        $fileFullName = $fileData->getStorage() . date("Y.m.d");
+        $data = $fileData->getData();
+        $this->setType($data, $fileData->getType());
         $this->appendTime($data);
-        file_put_contents($requestsFileName, $data.PHP_EOL,FILE_APPEND);
+        file_put_contents($fileFullName, $data . PHP_EOL, $fileData->getWriteMode());
     }
 
-    public function log($data, $type = "text") //TODO in one func
+    private function appendTime(&$data)
     {
-        $logFileName = self::LOG_DIR.date("Y.m.d");
-        $this->setType($data, $type);
-        $this->appendTime($data);
-        file_put_contents($logFileName, $data,FILE_APPEND);
+        $data = date("[Y-m-d H:i:s]: ") . $data.PHP_EOL;
     }
 
-    public function appendTime(&$data)
-    {
-        $data = date("[Y-m-d H:i:s]: ").$data.PHP_EOL;
-    }
-
-    public function setType(&$data, $type)
+    private function setType(&$data, $type) // TODO trash
     {
         switch ($type) {
             case 'json':
@@ -76,7 +81,11 @@ class FileWorker implements ConnectableInterface
         return ob_get_clean();
     }
 
-    public function messageReact($args)
+    public function getWithoutExtension($fullName){
+        return substr($fullName, 0, strrpos($fullName, "."));
+    }
+
+    public function messageReact($args) // TODO remove
     {
         dump("ura!");
     }

@@ -3,6 +3,7 @@ namespace App\Kernel\Classes;
 
 use App\Kernel\Classes\ArgumentObjects\RequestHandlerData;
 use App\Kernel\Classes\Facades\Config;
+use App\Kernel\Classes\Facades\File;
 use App\Kernel\Classes\Interfaces\UrlToRouteInterface;
 use App\Kernel\Url;
 
@@ -37,7 +38,6 @@ class UrlToRoute implements UrlToRouteInterface
             foreach ($routes as $route => $executer) {
                 $this->arguments = [];
                 if ($this->isMatch($url, $route)) {
-                    dump($route);
                     return new RequestHandlerData(...$this->generateDataForHandler($executer));
                 }
             }
@@ -56,53 +56,17 @@ class UrlToRoute implements UrlToRouteInterface
         return new RequestHandlerData(Config::get("controllers", "default-controller-name"), "index", []);
     }
 
-    public function tryToFindController($url)
+    public function tryToFindControllerOld($url)
     {
         $result = $this->findControllerInDir($this->controllersDir, $url, 0);
-        dump("try"); dump($result); dump("try");
         return $result ?? $this->defaultHandler();
     }
 
-    public function findControllerInDir($dir, $url, $level, $path = []) //TODO
+    public function tryToFindController($url)
     {
-        $urlToArr = explode("/", $url);
-        $controllersDir = opendir($dir);
-        while (false !== ($file = readdir($controllersDir))) {
-            // if we haven't enough parameters to use controllers methods
-            if (count($urlToArr) < $level + 1) {
-                return false;
-            } elseif (is_dir($dir . "/" . $file) and !in_array($file, [".", ".."]) and $file == $urlToArr[$level]) {
-                $newPath = array_merge($path, [$file]);
-                $result = $this->findControllerInDir($dir . "/" . $file, $url, $level + 1, $newPath);
-                if ($result) return new RequestHandlerData(...$result);
-            } elseif ($this->isController($file, $urlToArr[$level])) {
-                $extraPath = ($level > 0) ? implode('\\', $path) . "\\" : "";
-                $method = (count($urlToArr) <= $level + 1) ? "index" : $urlToArr[$level + 1];
-
-                $var = explode(".", $this->controllersDir . $extraPath . $file);
-                $controller = new $var[0]();
-
-                if (method_exists($controller, $method)) {
-                    return new RequestHandlerData(
-                        $extraPath . explode(".", $file)[0],
-                        $method,
-                        $this->getArgumentsFromUrl($urlToArr, $level)
-                    );
-                }
-            }
-
-        }
-        return false;
-    }
-
-    public function isController($file, $urlItem)
-    {
-        return in_array(Controller::getNameFromFile($file), [$urlItem, ucfirst($urlItem)]);
-    }
-
-    public function getArgumentsFromUrl($urlToArr, $level)
-    {
-        return array_slice($urlToArr, $level + 2);
+        $searcher = new ControllerSearcher($url);
+        $result = $searcher->search($this->controllersDir);
+        return $result ?? $this->defaultHandler();
     }
 
     public function isMatch($url, $route)
@@ -130,6 +94,7 @@ class UrlToRoute implements UrlToRouteInterface
     public function checkParameter($urlItem, $routeItem) //TODO
     {
         array_push($this->arguments, $urlItem);
+
         if (strpos($routeItem, ":d") !== false) {
             return (is_numeric($urlItem)) ? true : false;
         } elseif (strpos($routeItem, ":s") !== false) {

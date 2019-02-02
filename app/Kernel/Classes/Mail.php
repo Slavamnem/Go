@@ -10,5 +10,5 @@ namespace App\Kernel\Classes;
 use App\Kernel\Classes\Interfaces\MailInterface;
 
 class Mail implements MailInterface{
-
+    // TODO make it!
 }
