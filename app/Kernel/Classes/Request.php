@@ -15,7 +15,7 @@ class Request
 
     public function buildRequest(UrlToRouteInterface $urlToRouter)
     {
-        $this->handlerData = $urlToRouter->getRequestHandlerFromUrl(getUrl(), getRoutes());
+        $this->handlerData = $urlToRouter->getRequestHandlerFromUrl();
     }
 
 }

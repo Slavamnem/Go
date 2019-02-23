@@ -2,6 +2,7 @@
 namespace App\Kernel\Classes\Facades\Realizators;
 
 use App\Kernel\Classes\ArgumentObjects\FileData;
+use App\Kernel\Classes\Facades\Db;
 use App\Kernel\Traits\Connectable;
 use App\Kernel\Classes\Interfaces\ConnectableInterface;
 
@@ -28,9 +29,13 @@ class FileWorker implements ConnectableInterface
         }
     }
 
-    public function get($file)
+    public function get($file, $isFull = false)
     {
-        return file_get_contents(self::PROJECT_STORAGE_DIR . $file);
+        if ($isFull){
+            return file_get_contents($file);
+        } else {
+            return file_get_contents(self::PROJECT_STORAGE_DIR . $file);
+        }
     }
 
     public function setRequest($data, $type = "text")

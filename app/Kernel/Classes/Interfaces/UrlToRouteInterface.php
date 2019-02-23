@@ -9,9 +9,9 @@ namespace App\Kernel\Classes\Interfaces;
 
 interface UrlToRouteInterface{
 
-    public function getRequestHandlerFromUrl($url, $routes);
-    public function tryToFindController($url);
+    public function getRequestHandlerFromUrl();
+    public function tryToFindController();
     public function compareItems($urlItem, $routeItem);
-    public function isMatch($url, $route);
+    public function isMatch($route);
 
 }

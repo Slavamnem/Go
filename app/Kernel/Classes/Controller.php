@@ -28,32 +28,17 @@ class Controller implements ControllerInterface{
         }
     }
 
-    public function getViewFile($name)
-    {
-        return "{$this->viewsDir}{$name}.php";
-    }
-
-    public function getLayoutFile($name)
-    {
-        return "{$this->viewsDir}layouts/{$name}.php";
-    }
-
-    public function redirect($path, $data = [])
+    public function redirect($path, $data = []) // TODO fix
     {
         $refresh = $path;
         $uri = implode("/", $data);
-        $refresh .= (count(data) > 0)? "/".$uri : "";
+        $refresh .= (count($data) > 0)? "/". $uri : "";
         exit("<meta http-equiv='refresh' content='0; url= {$refresh}'>");
     }
 
     public function initializeFilters($filters){} // TODO
 
     //
-    public static function getShortName($file)
-    {
-        return substr($file, 0, strpos($file, "Controller"));
-    }
-
     public function hasMethod($method)
     {
         return method_exists($this->fullPath, $method);
@@ -67,5 +52,26 @@ class Controller implements ControllerInterface{
         return $this->fullPath;
     }
     //
+    public static function getFullPath($extraPath, $file)
+    {
+        $controllersDir = Config::get("controllers", "controllers-dir");
+        return $controllersDir . implode('\\', $extraPath) . "\\" . basename($file, ".php");
+    }
+
+    public static function getShortName($file)
+    {
+        return substr($file, 0, strpos($file, "Controller"));
+    }
+
+    //
+    private function getViewFile($name)
+    {
+        return "{$this->viewsDir}{$name}.php";
+    }
+
+    private function getLayoutFile($name)
+    {
+        return "{$this->viewsDir}layouts/{$name}.php";
+    }
 
 }

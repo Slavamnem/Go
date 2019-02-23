@@ -55,3 +55,9 @@ if (!function_exists('connector')) {
         }
     }
 }
+
+if (!function_exists("real")) {
+    function real($var) {
+        return (isset($var) and !empty($var));
+    }
+}

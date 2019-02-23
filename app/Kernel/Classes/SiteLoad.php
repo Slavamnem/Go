@@ -36,6 +36,7 @@ class SiteLoad
         $frequency = $this->countFrequency($request); dump($frequency);
         $this->rememberRequest($request);
 
+        HasTo::on($this->currentLimit > 0);
         return $this->currentLimit >= $frequency;
     }
 

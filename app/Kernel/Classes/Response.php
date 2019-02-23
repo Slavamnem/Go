@@ -6,7 +6,7 @@ use App\Kernel\Classes\Facades\Config;
 
 class Response
 {
-    public static function getResponse(RequestHandlerData $handlerData)
+    public static function getResponse(RequestHandlerData $handlerData) //TODO make interface
     {
         try {
             $controller = $handlerData->getController();

@@ -5,7 +5,9 @@ use App\Kernel\Classes\ArrayHelper;
 use App\Kernel\Classes\Facades\Config;
 use App\Kernel\Classes\Facades\File;
 use App\Kernel\Classes\PdoHelper;
+use App\Kernel\Classes\SqlBuilder;
 use App\Kernel\Classes\SqlTemplates;
+///use App\Project\Storage\Copies\DatabaseCopy2019_02_06_01_13_17;
 
 class Database
 {
@@ -30,9 +32,9 @@ class Database
         $stmp = $this->pdo->prepare($sql);
         $stmp->execute($params);
 
-        foreach ($params as &$param) {
+        /*foreach ($params as &$param) {
             $param = str_replace("\\\\", "\\", $param);
-        }
+        }*/
         //dump($params); dump($stmp);
         return $single? $stmp->fetch() : $stmp->fetchAll();
     }
@@ -45,21 +47,7 @@ class Database
 
     public function selectFromTable($table, $joinTables = [])
     {
-        if ($joinTables) {
-            $sql = SqlTemplates::select($table);
-            $sql = $this->addJoins($sql, $table, $joinTables);
-        } else {
-            $sql = SqlTemplates::select($table);
-        }
-        return PdoHelper::getRes($sql);
-    }
-
-    public function addJoins($sql, $currentTable, $joinTables)
-    {
-        foreach ($joinTables as $joinTable => $joinColumns) {
-            $sql .= " LEFT JOIN {$joinTable} ON {$currentTable}.{$joinColumns[0]} = {$joinTable}.{$joinColumns[1]}";
-        }
-        return $sql;
+        return PdoHelper::getRes(SqlBuilder::selectSql($table, $joinTables));
     }
 
     public function getTableSize($table)
@@ -88,8 +76,7 @@ class Database
 
     public function update($sql, $params = [])
     {
-        $stmp = $this->pdo->prepare($sql);
-        $stmp->execute($params);
+        $this->statement($sql, $params);
     }
 
     /*
@@ -98,29 +85,18 @@ class Database
 
     public function insert($sql, $params = [])
     {
-        $stmp = $this->pdo->prepare($sql);
-        $stmp->execute($params);
+        $this->statement($sql, $params);
     }
 
     public function insertInTable($tableName, $data)
     {
         try {
-            if (!is_array($data[0])) {
-                $data = [$data];
-            }
+            $data = (is_array($data[0]))? $data : [$data];
 
-            $fields = implode(", ", array_keys($data[0]));
-            foreach ($data as $item) {
-                $values[] = "('" . implode("', '", array_values($item)) . "')";
-            }
-
-            $values = implode(",", $values);
-            $sql = "INSERT INTO {$tableName} ({$fields}) VALUES{$values}";
-            $this->statement($sql);
+            $this->statement(SqlBuilder::insertSql($tableName, $data));
         } catch (\Exception $e) {
             dump($e->getMessage());
         }
-
     }
 
     public function delete($sql, $params = [])
@@ -137,13 +113,7 @@ class Database
     public function truncate($table, $size = 0)
     {
         if ($size) {
-            $sql = "DELETE FROM {$table} 
-              WHERE id NOT IN
-                (SELECT id FROM 
-                  (SELECT id FROM {$table} ORDER BY id ASC LIMIT {$size})
-                x)
-            ";
-            $this->statement($sql);
+            $this->statement(SqlBuilder::truncateSql($table, $size));
         } else {
             $this->statement("TRUNCATE {$table}");
         }
@@ -161,17 +131,27 @@ class Database
         //dump("restore!");
         $copiesDir = opendir(self::COPIES_DIR);
         while (false !== ($file = readdir($copiesDir))) {
-            if (count(explode("-", $date)) == 6) {
+            if (count(explode("_", $date)) == 6) {
                 if (strpos($file, $date)) {
-                    $name = "copy-$date";
-                    $copy = json_decode(File::get("Copies/{$name}.txt"));
-                    dump($copy);
 
-                    DbCopy::restore($copy);
+
+                    \App\Project\Storage\Copies\DatabaseCopy2019_02_06_01_13_17::class;
+                    $copyClass = "\\" . self::COPIES_DIR . "DatabaseCopy" . str_replace("-", "_", $date);
+                    //$copyClass = self::COPIES_DIR . "DatabaseCopyy"; // . str_replace("-", "_", $date);
+                    //$copyClass = Config::get("controllers", "controllers-dir") . "TestController";
+                    dump($copyClass);
+
+                    //$o = new $copyClass();
+                    $copyClass::restore();
+                    //$name = "copy-$date";
+                    //$copy = json_decode(File::get("Copies/{$name}.txt"));
+                    //dump($copy);
+
+                    //DbCopy::restore($copy);
                     //dump("found!");
                 }
-            } elseif (count(explode("-", $date)) == 3) {
-
+            } else {
+                //$date = integer
             }
         }
     }
@@ -195,7 +175,7 @@ class Database
         return $stmp->fetchAll();
     }
 
-    public function show() //TODO какие-то опыты, удалит потом
+    public function show() //TODO какие-то опыты, удалить потом
     {
         $stmp = $this->pdo->prepare("SELECT * FROM users WHERE id < :id");
         $stmp->execute(['id' => 4]);
@@ -214,6 +194,11 @@ class Database
     {
         $self = new self();
         return $self->$name(...$arguments);
+    }
+
+    public static function test()
+    {
+
     }
 
 }

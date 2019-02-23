@@ -10,8 +10,13 @@ use App\Kernel\Classes\FileService;
 class PostController extends Controller{
 
     public function index3(){
+        //Db::makeCopy();
         dump("site works");
+
+        //Db::restore("2019_02_14_00_25_52");
+        Db::restore("2019_02_23_17_58_25");
     }
+
     public function index2()
     {
 //        dump(Db::selectFromTable("_posts", [
@@ -19,10 +24,10 @@ class PostController extends Controller{
 //        ]));
 
         //dump(Db::selectFromTable("_posts"));
-//        Db::insertInTable("_posts", [
-//            ['title' => 7, 'text' => 7],
-//            ['title' => 777, 'text' => 777],
-//        ]);
+        Db::insertInTable("_posts", [
+            ['title' => 7, 'text' => 7],
+            ['title' => 777, 'text' => 777],
+        ]);
 
         //dump(Db::getTableSize("_posts"));
 

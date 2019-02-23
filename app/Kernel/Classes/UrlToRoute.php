@@ -10,38 +10,32 @@ use App\Kernel\Url;
 class UrlToRoute implements UrlToRouteInterface
 {
 
+    public $arguments = [];
     public $controllersDir;
 
-    public $denied = [
-        "'",
-        "\"",
-        "+",
-        "DROP",
-        "TRUNCATE",
-        "\\",
-        "?",
-    ];
-
-    public $arguments = [];
+    private $url;
+    private $routes;
     private $router;
 
     public function __construct()
     {
+        $this->url = getUrl();
+        $this->routes = getRoutes();
         $this->router = new Route();
         $this->controllersDir = Config::get("controllers", "controllers-dir");
     }
 
-    public function getRequestHandlerFromUrl($url, $routes)
+    public function getRequestHandlerFromUrl()
     {
-        if ($url) {
-            $this->router->addExtraRoutesForUnusualParams($routes);
-            foreach ($routes as $route => $executer) {
+        if ($this->url) {
+            $this->router->addExtraRoutesForUnusualParams($this->routes);
+            foreach ($this->routes as $route => $executer) {
                 $this->arguments = [];
-                if ($this->isMatch($url, $route)) {
+                if ($this->isMatch($route)) {
                     return new RequestHandlerData(...$this->generateDataForHandler($executer));
                 }
             }
-            return $this->tryToFindController($url);
+            return $this->tryToFindController();
         }
         return $this->defaultHandler();
     }
@@ -56,23 +50,17 @@ class UrlToRoute implements UrlToRouteInterface
         return new RequestHandlerData(Config::get("controllers", "default-controller-name"), "index", []);
     }
 
-    public function tryToFindControllerOld($url)
+    public function tryToFindController()
     {
-        $result = $this->findControllerInDir($this->controllersDir, $url, 0);
-        return $result ?? $this->defaultHandler();
-    }
-
-    public function tryToFindController($url)
-    {
-        $searcher = new ControllerSearcher($url);
+        $searcher = new ControllerSearcher($this->url);
         $result = $searcher->search($this->controllersDir);
         return $result ?? $this->defaultHandler();
     }
 
-    public function isMatch($url, $route)
+    public function isMatch($route)
     {
         return ArrayHelper::isMatch(
-            explode("/", $url),
+            explode("/", $this->url),
             explode("/", $route),
             $this,
             "compareItems"
@@ -82,8 +70,9 @@ class UrlToRoute implements UrlToRouteInterface
     public function compareItems($urlItem, $routeItem) //TODO
     {
         if (strlen($urlItem) > 0) {
-            if (strpos($routeItem, "{") !== false) {
-                return $this->checkParameter($urlItem, $routeItem);
+            if ($this->isUnusualParam($routeItem)) {
+                array_push($this->arguments, $urlItem);
+                return Defender::checkUrlParameter($urlItem, $routeItem);
             } else {
                 return $urlItem == $routeItem;
             }
@@ -91,21 +80,9 @@ class UrlToRoute implements UrlToRouteInterface
         return false;
     }
 
-    public function checkParameter($urlItem, $routeItem) //TODO
+    private function isUnusualParam($routeItem)
     {
-        array_push($this->arguments, $urlItem);
-
-        if (strpos($routeItem, ":d") !== false) {
-            return (is_numeric($urlItem)) ? true : false;
-        } elseif (strpos($routeItem, ":s") !== false) {
-            for ($i = 0; $i < count($this->denied); $i++) {
-                if (strpos($urlItem, $this->denied[$i]) !== false) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return true;
+        return (strpos($routeItem, "{") !== false);
     }
 
 }

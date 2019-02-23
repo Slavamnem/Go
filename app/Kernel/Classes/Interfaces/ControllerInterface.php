@@ -12,5 +12,9 @@ interface ControllerInterface{
     public function render($view, $data = []);
     public function redirect($path, $data = []);
     public function initializeFilters($filters);
+    public function hasMethod($method);
+    public function getPath();
 
+    public static function getFullPath($extraPath, $file);
+    public static function getShortName($file);
 }

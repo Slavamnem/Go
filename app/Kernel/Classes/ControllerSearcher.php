@@ -16,44 +16,41 @@ class ControllerSearcher extends FileSearchService
         $this->controllersDir = Config::get("controllers", "controllers-dir");
     }
 
-    public function search($dir, $extraPath = [], $deep = 0)
+    public function search($dir, $extraPath = [], $deep = 0) // TODO make object instead params
     {
         $currentDir = opendir($dir);
         while (false !== ($file = readdir($currentDir))) {
             if ($this->hasEnoughParams($deep + 1)) {
                 if ($this->isMatchingDir($dir, $file, $deep)) {
                     $this->prepareForDiving($deep, $dir, $extraPath, $file);
-
-                    if ($this->search($dir, $extraPath, $deep)){
-                        return $this->search($dir, $extraPath, $deep);
-                    }
+                    $response = $this->search($dir, $extraPath, $deep);
                 } elseif ($this->isMatchingController($file, $deep)) {
-                    if ($deep) {
-                        $controller = new Controller($this->getControllerFullPath($extraPath, $file));
-                    } else {
-                        $controller = new Controller($this->controllersDir . basename($file, ".php"));
-                    }
-
-                    if ($controller->hasMethod($this->getMethodFromUrl($deep))) {
-                        return new RequestHandlerData(
-                            $controller->getPath(),
-                            $this->getMethodFromUrl($deep),
-                            $this->getArgumentsFromUrl($deep)
-                        );
-                    }
+                    $response = $this->getDataForRequestHandler($file, $extraPath, $deep);
                 }
+                if (real($response)) return $response;
             } else {
                 return false;
             }
         }
     }
 
-    // controller section
-
-    private function getControllerFullPath($extraPath, $file)
+    private function getDataForRequestHandler($file, $extraPath, $deep)
     {
-        return $this->controllersDir . implode('\\', $extraPath) . "\\" . basename($file, ".php");
+        if ($deep) {
+            $controller = new Controller(Controller::getFullPath($extraPath, $file));
+        } else {
+            $controller = new Controller($this->controllersDir . basename($file, ".php"));
+        }
+
+        if ($controller->hasMethod($this->getMethodFromUrl($deep))) {
+            return new RequestHandlerData(
+                $controller->getPath(),
+                $this->getMethodFromUrl($deep),
+                $this->getArgumentsFromUrl($deep)
+            );
+        }
     }
+    // controller section
 
     private function isMatchingController($fileName, $deep)
     {

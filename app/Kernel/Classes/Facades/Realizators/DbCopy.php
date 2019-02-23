@@ -11,6 +11,7 @@ class DbCopy{
     private $pdo;
     public $createTablesSql;
     public $insertDataSql;
+    const TEMPLATE_DIR = "./app/Kernel/Classes/Facades/Realizators/";
 
     public function __construct($pdo, $dbname)
     {
@@ -26,7 +27,43 @@ class DbCopy{
             $this->getInsertDataSql($tableName, $fields);
         }
 
-        $this->save();
+        //$this->save();
+        $this->createCopy();
+    }
+
+    public function createCopy()
+    {
+        //dump($this->createTablesSql);
+        $template = File::get(self::TEMPLATE_DIR . "DatabaseCopyTemplate.php", true);
+
+        $template = str_replace(
+            'class DatabaseCopy',
+            'class DatabaseCopy' . date("Y_m_d_H_i_s"),
+            $template
+        );
+
+        $template = str_replace(
+            'public static $createTablesSqls',
+            'public static $createTablesSqls = ' . var_export($this->createTablesSql, true),
+            $template
+        );
+
+        $template = str_replace(
+            'public static $insertDataSqls',
+            'public static $insertDataSqls = ' . var_export($this->insertDataSql, true),
+            $template
+        );
+
+        //var_dump(htmlspecialchars(var_export($this->createTablesSql, true)));
+
+        //echo htmlspecialchars($template);
+        //var_dump(htmlspecialchars($template));
+        //dump($template);
+        //dump(self::TEMPLATE_DIR . "DatabaseCopyTemplate.php");
+
+        $name = "DatabaseCopy".date("Y_m_d_H_i_s");
+        //$json = json_encode($template);
+        File::save("Copies/{$name}.php", $template);
     }
 
     public function save()
@@ -74,6 +111,7 @@ class DbCopy{
         }
 
         if ($values) {
+            $values = str_replace("''", "NULL", $values);
             $result .= implode(", ", $values);
             return true;
         } else {
@@ -104,9 +142,10 @@ class DbCopy{
 
     public function addFieldsBlock(&$result, $fields)
     {
-        foreach ($fields as $key => $field) {
+        foreach ($fields as $key => $field) { //dump($field);
             $extra = $field['Extra']? " {$field['Extra']}" : "";
-            $result .= "{$field['Field']} {$field['Type']}{$extra},<br>"; //TODO br
+            $defaultNull = $field['Null'] == "YES" ? " DEFAULT NULL" : "";
+            $result .= "{$field['Field']} {$field['Type']}{$extra}{$defaultNull},<br>"; //TODO br
         }
     }
 
