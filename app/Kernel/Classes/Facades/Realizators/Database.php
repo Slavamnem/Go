@@ -4,6 +4,7 @@ namespace App\Kernel\Classes\Facades\Realizators;
 use App\Kernel\Classes\ArrayHelper;
 use App\Kernel\Classes\Facades\Config;
 use App\Kernel\Classes\Facades\File;
+use App\Kernel\Classes\Log;
 use App\Kernel\Classes\PdoHelper;
 use App\Kernel\Classes\SqlBuilder;
 use App\Kernel\Classes\SqlTemplates;
@@ -126,33 +127,29 @@ class Database
         $copy->create($tables);
     }
 
-    public function restore($date = null) // TODO доделать
+    public function restore($date = 0) // TODO доделать
     {
-        //dump("restore!");
+        $date = str_replace("-", "_", $date);
         $copiesDir = opendir(self::COPIES_DIR);
-        while (false !== ($file = readdir($copiesDir))) {
-            if (count(explode("_", $date)) == 6) {
+
+        if (count(explode("_", $date)) == 6) {
+            while (false !== ($file = readdir($copiesDir))) {
                 if (strpos($file, $date)) {
-
-
-                    \App\Project\Storage\Copies\DatabaseCopy2019_02_06_01_13_17::class;
-                    $copyClass = "\\" . self::COPIES_DIR . "DatabaseCopy" . str_replace("-", "_", $date);
-                    //$copyClass = self::COPIES_DIR . "DatabaseCopyy"; // . str_replace("-", "_", $date);
-                    //$copyClass = Config::get("controllers", "controllers-dir") . "TestController";
-                    dump($copyClass);
-
-                    //$o = new $copyClass();
-                    $copyClass::restore();
-                    //$name = "copy-$date";
-                    //$copy = json_decode(File::get("Copies/{$name}.txt"));
-                    //dump($copy);
-
-                    //DbCopy::restore($copy);
-                    //dump("found!");
+                    $copyClass = "\\" . self::COPIES_DIR . "DatabaseCopy" . $date;
                 }
-            } else {
-                //$date = integer
             }
+        } else {
+            while (false !== ($file = readdir($copiesDir))) {
+                if (strpos($file, date("Y_m_d", strtotime("- {$date} day")))) {
+                    $copyClass = "\\" . self::COPIES_DIR . basename($file, ".php");
+                }
+            }
+        }
+        File::log("Database restore failed");
+        try {
+            $copyClass::restore();
+        } catch (\Exception $exception) {
+            File::log("Database restore failed");
         }
     }
 

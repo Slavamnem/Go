@@ -27,13 +27,11 @@ class DbCopy{
             $this->getInsertDataSql($tableName, $fields);
         }
 
-        //$this->save();
         $this->createCopy();
     }
 
     public function createCopy()
     {
-        //dump($this->createTablesSql);
         $template = File::get(self::TEMPLATE_DIR . "DatabaseCopyTemplate.php", true);
 
         $template = str_replace(
@@ -54,15 +52,7 @@ class DbCopy{
             $template
         );
 
-        //var_dump(htmlspecialchars(var_export($this->createTablesSql, true)));
-
-        //echo htmlspecialchars($template);
-        //var_dump(htmlspecialchars($template));
-        //dump($template);
-        //dump(self::TEMPLATE_DIR . "DatabaseCopyTemplate.php");
-
         $name = "DatabaseCopy".date("Y_m_d_H_i_s");
-        //$json = json_encode($template);
         File::save("Copies/{$name}.php", $template);
     }
 

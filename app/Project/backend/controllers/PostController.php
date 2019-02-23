@@ -13,8 +13,8 @@ class PostController extends Controller{
         //Db::makeCopy();
         dump("site works");
 
-        //Db::restore("2019_02_14_00_25_52");
-        Db::restore("2019_02_23_17_58_25");
+        //Db::restore("2019-02-23-17-58-25");
+        Db::restore(1);
     }
 
     public function index2()
